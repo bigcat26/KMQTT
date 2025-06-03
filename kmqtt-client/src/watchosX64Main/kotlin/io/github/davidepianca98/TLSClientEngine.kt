@@ -1,13 +1,6 @@
 package io.github.davidepianca98
 
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.COpaquePointer
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.pointed
-import kotlinx.cinterop.refTo
-import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.staticCFunction
-import kotlinx.cinterop.toKString
+import kotlinx.cinterop.*
 import openssl.*
 import platform.posix.getenv
 import platform.posix.strcpy
@@ -154,7 +147,7 @@ internal actual class TLSClientEngine actual constructor(tlsSettings: TLSClientS
                 listOf(bytes.size.toByte()) + bytes.toList()
             }.toByteArray()
 
-            protoBytes.usePinned { pinned ->
+            protoBytes.usePinned { pinned: Pinned<ByteArray> ->
                 val result = SSL_CTX_set_alpn_protos(
                     sslContext,
                     pinned.addressOf(0).reinterpret(),
@@ -174,7 +167,8 @@ internal actual class TLSClientEngine actual constructor(tlsSettings: TLSClientS
         }
 
         tlsSettings.serverNameIndications?.let {
-            it.encodeToByteArray().usePinned { pinned ->
+            val sniBytes = it.encodeToByteArray()
+            sniBytes.usePinned { pinned: Pinned<ByteArray> ->
                 val result = SSL_ctrl(
                     clientContext, // CPointer<SSL>
                     SSL_CTRL_SET_TLSEXT_HOSTNAME,

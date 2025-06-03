@@ -167,11 +167,11 @@ internal actual class TLSClientEngine actual constructor(tlsSettings: TLSClientS
                 val result = SSL_ctrl(
                     clientContext, // CPointer<SSL>
                     SSL_CTRL_SET_TLSEXT_HOSTNAME,
-                    TLSEXT_NAMETYPE_host_name.toLong(),
+                    TLSEXT_NAMETYPE_host_name,
                     pinned.addressOf(0)
                 )
 
-                if (result != 1L) {
+                if (result != 1) {
                     throw Exception("Failed to set SNI hostname")
                 }
             }
