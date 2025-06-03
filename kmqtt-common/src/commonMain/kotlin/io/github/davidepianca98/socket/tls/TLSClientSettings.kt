@@ -21,5 +21,5 @@ public data class TLSClientSettings(
     val clientCertificatePassword: String? = null,
     val checkServerCertificate: Boolean = true,
     val alpnProtocols: List<String>? = null,
-    val serverNameIndications: List<String>? = null
+    val serverNameIndications: String? = null
 )

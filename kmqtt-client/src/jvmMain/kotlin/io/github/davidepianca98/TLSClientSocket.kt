@@ -104,9 +104,7 @@ public actual class TLSClientSocket actual constructor(
             params.applicationProtocols = it.toTypedArray()
         }
         tlsSettings.serverNameIndications?.let {
-            params.serverNames = it.map { name ->
-                SNIHostName(name)
-            }
+            params.serverNames = listOf(SNIHostName(it))
         }
         sslParameters = params
     }
