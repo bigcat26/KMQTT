@@ -14,6 +14,7 @@ buildscript {
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.goncalossilva.resources)
+    id("com.dorongold.task-tree") version "2.1.1"
 }
 
 subprojects {
