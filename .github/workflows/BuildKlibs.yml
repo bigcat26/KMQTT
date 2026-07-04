@@ -1,0 +1,79 @@
+name: Build klibs
+
+on:
+  push:
+    branches: [my, master]
+  pull_request:
+    branches: [my, master]
+  workflow_dispatch:
+
+jobs:
+  build-apple-klibs:
+    name: Build iOS/macOS/tvOS/watchOS klibs
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build Apple target klibs
+        run: |
+          chmod +x ./gradlew
+          ./gradlew \
+            :kmqtt-common:iosArm64MainKlibrary \
+            :kmqtt-common:iosSimulatorArm64MainKlibrary \
+            :kmqtt-common:iosX64MainKlibrary \
+            :kmqtt-common:macosArm64MainKlibrary \
+            :kmqtt-common:macosX64MainKlibrary \
+            :kmqtt-common:tvosArm64MainKlibrary \
+            :kmqtt-common:tvosSimulatorArm64MainKlibrary \
+            :kmqtt-common:tvosX64MainKlibrary \
+            :kmqtt-common:watchosArm32MainKlibrary \
+            :kmqtt-common:watchosArm64MainKlibrary \
+            :kmqtt-common:watchosSimulatorArm64MainKlibrary \
+            :kmqtt-common:watchosX64MainKlibrary \
+            :kmqtt-client:iosArm64MainKlibrary \
+            :kmqtt-client:iosSimulatorArm64MainKlibrary \
+            :kmqtt-client:iosX64MainKlibrary \
+            :kmqtt-client:macosArm64MainKlibrary \
+            :kmqtt-client:macosX64MainKlibrary \
+            :kmqtt-client:tvosArm64MainKlibrary \
+            :kmqtt-client:tvosSimulatorArm64MainKlibrary \
+            :kmqtt-client:tvosX64MainKlibrary \
+            :kmqtt-client:watchosArm32MainKlibrary \
+            :kmqtt-client:watchosArm64MainKlibrary \
+            :kmqtt-client:watchosSimulatorArm64MainKlibrary \
+            :kmqtt-client:watchosX64MainKlibrary \
+            --no-daemon
+
+  build-android-jvm-and-linux-klibs:
+    name: Build Android/JVM jar and Linux/Windows klibs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build JVM (Android) jar and Linux/Windows klibs
+        run: |
+          chmod +x ./gradlew
+          ./gradlew \
+            :kmqtt-common:jvmJar \
+            :kmqtt-client:jvmJar \
+            :kmqtt-common:linuxX64MainKlibrary \
+            :kmqtt-common:linuxArm64MainKlibrary \
+            :kmqtt-common:mingwX64MainKlibrary \
+            :kmqtt-client:linuxX64MainKlibrary \
+            :kmqtt-client:linuxArm64MainKlibrary \
+            :kmqtt-client:mingwX64MainKlibrary \
+            --no-daemon

@@ -1,27 +1,29 @@
 #!/bin/bash
+set -euo pipefail
 
 tasks=(
-    "iosArm64Klib"
-    "iosSimulatorArm64Klib"
-    "iosX64Klib"
-    "linuxArm64Klib"
-    "linuxX64Klib"
-    "macosArm64Klib"
-    "macosX64Klib"
-    "mingwX64Klib"
-    "tvosArm64Klib"
-    "tvosSimulatorArm64Klib"
-    "tvosX64Klib"
-    "watchosArm32Klib"
-    "watchosArm64Klib"
-    "watchosSimulatorArm64Klib"
-    "watchosX64Klib"
+    "iosArm64MainKlibrary"
+    "iosSimulatorArm64MainKlibrary"
+    "iosX64MainKlibrary"
+    "linuxArm64MainKlibrary"
+    "linuxX64MainKlibrary"
+    "macosArm64MainKlibrary"
+    "macosX64MainKlibrary"
+    "mingwX64MainKlibrary"
+    "tvosArm64MainKlibrary"
+    "tvosSimulatorArm64MainKlibrary"
+    "tvosX64MainKlibrary"
+    "watchosArm32MainKlibrary"
+    "watchosArm64MainKlibrary"
+    "watchosSimulatorArm64MainKlibrary"
+    "watchosX64MainKlibrary"
+    "jvmJar"
 )
 
 for task in "${tasks[@]}"; do
     echo "Building :kmqtt-common:$task"
-    ./gradlew :kmqtt-common:$task
+    ./gradlew ":kmqtt-common:$task"
 
     echo "Building :kmqtt-client:$task"
-    ./gradlew :kmqtt-client:$task
+    ./gradlew ":kmqtt-client:$task"
 done

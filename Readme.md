@@ -54,6 +54,8 @@
 
 If you are getting an error saying that OpenSSL hasn't been found, please copy the correct file from https://github.com/davidepianca98/KMQTT/tree/master/kmqtt-common/src/nativeInterop in your project's main directory.
 
+**Known limitation on Apple targets (iOS/tvOS/watchOS/macOS):** consuming the published `kmqtt-client`/`kmqtt-common` Maven artifacts on Apple targets can fail at **runtime** with an error like `Function 'BIO_s_mem' can not be called: No function found for symbol ...` even though compilation and linking succeed. This is a known Kotlin/Native compiler limitation around cinterop library identity ([KT-78062](https://youtrack.jetbrains.com/issue/KT-78062)), not a missing-OpenSSL configuration problem, and re-copying/rebuilding OpenSSL locally does not fix it. If you need TLS on an Apple target, depend on this repository via a Gradle composite build (`includeBuild`) instead of the Maven Central coordinates, so the OpenSSL cinterop bindings and your app are compiled in the same build session. See `ISSUE.md` for the full investigation.
+
 ##### Kotlin Multiplatform plugin
 On the Kotlin Multiplatform plugin you only need to require the dependency on the common source set and the platform specific parts will be automatically imported.
 ```gradle
