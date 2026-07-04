@@ -19,6 +19,12 @@ import io.github.davidepianca98.socket.tls.TLSEngine
 internal actual class TLSClientEngine actual constructor(tlsSettings: TLSClientSettings) : TLSEngine {
 
     private val context: CPointer<SSL>
+
+    // Guards against SSL_free being invoked twice on the same context: TLSSocket.read()/send0()
+    // close the engine internally on several OpenSSL error paths, and the outer MQTTClient can
+    // also close() the same engine again afterward (e.g. its own read-error catch block) —
+    // without this guard the second call double-frees `context` and aborts the process.
+    private var closed = false
     private val readBio: CPointer<BIO>
     private val writeBio: CPointer<BIO>
 
@@ -165,32 +171,43 @@ internal actual class TLSClientEngine actual constructor(tlsSettings: TLSClientS
     }
 
     actual override val isInitFinished: Boolean
-        get() = SSL_is_init_finished(context) != 0
+        get() = !closed && SSL_is_init_finished(context) != 0
 
     actual override val bioShouldRetry: Boolean
-        get() = BIO_test_flags(writeBio, BIO_FLAGS_SHOULD_RETRY) == 0
+        get() = !closed && BIO_test_flags(writeBio, BIO_FLAGS_SHOULD_RETRY) == 0
 
     actual override fun write(buffer: CPointer<ByteVar>, length: Int): Int {
+        // `context` is freed once close() runs; touching it afterward (e.g. MQTTClient.disconnect()
+        // reusing an already-closed engine to send a DISCONNECT packet) is a use-after-free.
+        if (closed) return -1
         return SSL_write(context, buffer, length)
     }
 
     actual override fun read(buffer: CPointer<ByteVar>, length: Int): Int {
+        if (closed) return -1
         return SSL_read(context, buffer, length)
     }
 
     actual override fun bioRead(buffer: CPointer<ByteVar>, length: Int): Int {
+        if (closed) return -1
         return BIO_read(writeBio, buffer, length)
     }
 
     actual override fun bioWrite(buffer: CPointer<ByteVar>, length: Int): Int {
+        if (closed) return -1
         return BIO_write(readBio, buffer, length)
     }
 
     actual override fun getError(result: Int): Int {
+        // Generic SSL_ERROR_SSL (fatal) once closed — SSL_get_error itself would touch the freed
+        // context. Callers already treat unrecognized/fatal codes as close()+throw.
+        if (closed) return 1
         return SSL_get_error(context, result)
     }
 
     actual override fun close() {
+        if (closed) return
+        closed = true
         SSL_free(context)
     }
 }
